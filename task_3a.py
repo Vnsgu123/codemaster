@@ -97,7 +97,8 @@ def detect_all_nodes(image):
 			cv2.drawContours(frame, [approx], 0, (0, 255, 155), 2)
 			# cv2.imshow('contour',frame)
 			M = cv2.moments(contour)
-			if len(approx) == 4:				
+			if len(approx) == 4 and len(contour) < 50:		
+				print(len(contour))
 				if M['m00'] != 0:
 					cx = int(M['m10']/M['m00'])
 					cy = int(M['m01']/M['m00'])
@@ -127,12 +128,12 @@ def detect_all_nodes(image):
 			print(traffic_signals)
 
 		if i==1:
-			start_node=li
+			start_node=li[0]
 			print("'start node':",end ='')
 			print(start_node)
 
 		if i==2:
-			end_node=li
+			end_node=li[0]
 			print("'End node':",end ='')
 			print(end_node)
 
@@ -190,7 +191,7 @@ def detect_paths_to_graph(image):
 		for i in range(1,7):
 			flag=0
 			crop_img=image[qq:ww ,q:w]
-			cv2.imshow('cropimge',crop_img)
+			# cv2.imshow('cropimge',crop_img)
 			cv2.waitKey(2)
 			gray = cv2.cvtColor(crop_img,cv2.COLOR_RGB2HSV)
 			mask = cv2.inRange(gray ,(0,0,231),(180,18,255))
@@ -550,7 +551,7 @@ def detect_paths_to_graph(image):
 		w=w+100
   	
 	##################################################
-	cv2.imshow('contour',image)
+	# cv2.imshow('contour',image)
 	cv2.waitKey(0)
 	print(horizontal_roads_under_construction)
 	vertical_roads_under_construction=[]
@@ -648,7 +649,7 @@ def detect_paths_to_graph(image):
 						# o='B'+i
 						A4.append(z)
 						A5.append(u)
-						print(A4,B5)
+						print(A4,A5)
 					if i == 5:
 						u='A'+str(i)
 						z='A'+str(i+1)
@@ -876,15 +877,15 @@ def detect_paths_to_graph(image):
 		ww=ww+100
 	# print("'vertical_road_under_construction':",end ='')
 	print(vertical_roads_under_construction)
-	cv2.imshow('contour',crop_img)
+	# cv2.imshow('contour',crop_img)
 	cv2.waitKey(0)	
 	paths={}
 	paths["A1"]=A1
 	paths["A2"]=A2
 	paths["A3"]=A3
-	paths["A4"]=A3
-	paths["A5"]=A3
-	paths["A6"]=A3
+	paths["A4"]=A4
+	paths["A5"]=A5
+	paths["A6"]=A6
 	paths["B1"]=B1
 	paths["B2"]=B2
 	paths["B3"]=B3
@@ -937,7 +938,7 @@ def detect_paths_to_graph(image):
 	
 	##################################################
 
-	# return paths
+	return paths
 
 
 def detect_arena_parameters(maze_image):
@@ -977,7 +978,12 @@ def detect_arena_parameters(maze_image):
 
 	##############	ADD YOUR CODE HERE	##############
 	traffic_signals, start_node, end_node = detect_all_nodes(maze_image)
-	detect_paths_to_graph(maze_image)
+	paths=detect_paths_to_graph(maze_image)
+	arena_parameters["traffic_signals"]=traffic_signals
+	arena_parameters["start_node"]=start_node
+	arena_parameters["end_node"]=end_node
+	arena_parameters["paths"]=paths
+	print(arena_parameters)
 
 	##################################################
 	
@@ -1016,16 +1022,101 @@ def path_planning(graph, start, end):
 	"""    
 
 	backtrace_path=[]
-
+                                   
 	##############	ADD YOUR CODE HERE	##############
+	backtrace_path.append(start)
+	min=100
+	k=start
+	flag=1
+	flag1=0
+	flag2=0
+	count=0
+	while flag:
+		flag1=0
+		fagg=0
+		for i in graph[k]:
+			if fagg == 0:
+				qqq=k
+				fagg=1
+			print("-------------------",i,graph[k],k)
+			d=distance(i,end)
+			if d == 0:
+				flag=0
+			print("&&&&&",d,min)
+			if d <= min and flag2==0:
+				flag1=1
+				print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+				min = d
+				# q=k
+				k=i
+			if flag2==1 and d<=min and i!=x:
+				flag1=1
+				min = d
+				q=k
+				k=i
 
+		if flag1==1:
+			print(min)
+			ooo=qqq
+			backtrace_path.append(k)
+			flag2=0
+		if flag1==0:
+			count=count+1
+			if count == 2:
+				l=[]
+				o=k
+				print(backtrace_path)
+				# l=path(end,graph,backtrace_path)z
+				flag=0
+				min2=100
+				min=20
+				kk=backtrace_path[2]
+				while kk != end:
+					flag=0
+					fag=1	
+					for i in graph[kk]:
+						print("###################################################################################")
+						if fag == 1:
+							q=kk
+							print(q)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+							fag=0
+						print(i)
+						d=distance(i,end)
+						if d < min:
+							print("%%%%%%%%",d,min)
+							min = d
+							# print(kk)
+							# q=kk
+							kk=i
+							flag=1
+					if flag == 0:   
+						for j in graph[kk]:
+							if j != w:
+								dd=distance(j,end)
+								if dd <= min2:
+									print("xsftcdstttttttttttttttttttt",min,kk,j,q,w)
+									min2=dd
+									kk=j
+					backtrace_path.append(kk)
+					w=q
+					print("------------",w)
+					min2=100
+					print("yyyyyyyyyyyyyyyyyyyy",backtrace_path)
+				print(backtrace_path)
+				break
+
+			x=k
+			backtrace_path.remove(k)
+			k=ooo
+			print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",k)
+			flag2=1
+			
 	##################################################
 
-
+	print(backtrace_path)
 	return backtrace_path
 
 def paths_to_moves(paths, traffic_signal):
-
 	"""
 	Purpose:
 	---
@@ -1048,14 +1139,91 @@ def paths_to_moves(paths, traffic_signal):
 	---
 	moves = paths_to_moves(paths, traffic_signal)
 	"""    
-	
 	list_moves=[]
 
 	##############	ADD YOUR CODE HERE	##############
+	print(paths,traffic_signal)
+	k=len(paths)
+	flag=0
+	flag1=0
+	for i in range(0,k):
+		o=i+1
+		print(i,o)
+		print(paths[i],paths[o],list_moves)
+		q=paths[i]
+		w=paths[i+1]
+		for j in traffic_signal:
+			if q==j:
+				flag=1
+			if w==j:
+				flag1=1
+		if flag == 0 :
+			q1=q[0]
+			print("((((((((((",q1)
+			q11=ord(q1)
+			q2=q[1]
+			print("(((((((((((",q2)
+			q2=int(q2)
+			w1=w[0]
+			w11=ord(w1)
+			w2=w[1]
+			w2=int(w2)
+			r=q2- w2
+			r1=q11-w11
+			print("----------",q11,w11,r1,r)
+			if r1==0 and r > 0:
+				list_moves.append("RIGHT")
+			if r1==0 and r < 0:
+				list_moves.append("LEFT")
+			if r==0 and r1 > 0:
+				list_moves.append("LEFT")
+			if r==0 and r1 < 0:
+				list_moves.append("RIGHT")
+		if flag == 1:
+				list_moves.append("WAIT_5")
 
+			
 	##################################################
 
 	return list_moves
+def distance(i,end):
+    c=i[0]
+    w=ord(c)
+    w1=i[1]
+    w1=int(w1)
+    c1=end[0]
+    q=ord(c1)
+    q1=end[1]
+    q1=int(q1)
+    r=w1-q1
+    if r < 0:
+        r=-r
+    r1=w-q
+    if r1 < 0:
+        r1=-r1
+    f=r1+r
+    return f
+def path(end,graph,li):
+	k=li[2]
+	print(type(k),end)
+	flag=0
+	while k != end:
+		for i in graph(k):
+			print(i)
+			d=distance(i,end)
+			if d <= min:
+				min = d
+				k=i
+				flag=1
+		if flag == 0:
+			for j in graph(k):
+				if j != q:
+					dd=distance(j,end)
+					if dd < min2:
+						min2=dd
+						k=j
+		li.append(k)
+		q=k  
 
 ######### YOU ARE NOT ALLOWED TO MAKE CHANGES TO THIS FUNCTION #########	
 
@@ -1072,19 +1240,19 @@ if __name__ == "__main__":
 			image = cv2.imread(img_file_path)
 			
 			# detect the arena parameters from the image
-			arena_parameters = dete ct_arena_parameters(image)
+			arena_parameters = detect_arena_parameters(image)
 			print('\n============================================')
 			print("IMAGE: ", file_num)
-			# print(arena_parameters["start_node"], "->>> ", arena_parameters["end_node"] )
+			print(arena_parameters["start_node"], "->>> ", arena_parameters["end_node"] )
 
 			# path planning and getting the moves
-			# back_path=path_planning(arena_parameters["paths"], arena_parameters["start_node"], arena_parameters["end_node"])
-			# moves=paths_to_moves(back_path, arena_parameters["traffic_signals"])
+			back_path=path_planning(arena_parameters["paths"], arena_parameters["start_node"], arena_parameters["end_node"])
+			moves=paths_to_moves(back_path, arena_parameters["traffic_signals"])
 
 			# print("PATH PLANNED: ", back_path)
 			# print("MOVES TO TAKE: ", moves)
 
 			# display the test image
-			cv2.imshow("image", image)
+			# cv2.imshow("image", image)
 			cv2.waitKey(0)
 			cv2.destroyAllWindows()
