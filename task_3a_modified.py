@@ -996,6 +996,8 @@ def detect_arena_parameters(maze_image):
 	##############	ADD YOUR CODE HERE	##############
 	traffic_signals, start_node, end_node = detect_all_nodes(maze_image)
 	paths=detect_paths_to_graph(maze_image)
+	b = ''.join(str(traffic_signals).split(","))
+	print(b)
 	arena_parameters["traffic_signals"]=traffic_signals
 	arena_parameters["start_node"]=start_node
 	arena_parameters["end_node"]=end_node
