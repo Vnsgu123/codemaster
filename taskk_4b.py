@@ -5,7 +5,7 @@
 *           		Pharma Bot (PB) Theme (eYRC 2022-23)
 *        		===============================================
 *
-*  This script is to implement Task 3D of Pharma Bot (PB) Theme (eYRC 2022-23).
+*  This script is to implement Task 4B of Pharma Bot (PB) Theme (eYRC 2022-23).
 *  
 *  This software is made available on an "AS IS WHERE IS BASIS".
 *  Licensee/end user indemnifies and will keep e-Yantra indemnified from
@@ -17,7 +17,7 @@
 
 # Team ID:			[ Team-ID ]
 # Author List:		[ Names of team members worked on this file separated by Comma: Name1, Name2, ... ]
-# Filename:			socket_client_rgb.py
+# Filename:			task_4b.py
 # Functions:		
 # 					[ Comma separated list of functions in this file ]
 
@@ -29,180 +29,43 @@
 import socket
 import time
 import os, sys
-import RPi.GPIO as GPIO
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
+from zmqRemoteApi import RemoteAPIClient
+import traceback
+import zmq
+import numpy as np
+import cv2
+from pyzbar.pyzbar import decode
+import json
+import random
 ##############################################################
 
-################# ADD UTILITY FUNCTIONS HERE #################
+## Import PB_theme_functions code
+try:
+	pb_theme = __import__('PB_theme_functions')
 
+except ImportError:
+	print('\n[ERROR] PB_theme_functions.py file is not present in the current directory.')
+	print('Your current directory is: ', os.getcwd())
+	print('Make sure PB_theme_functions.py is present in this current directory.\n')
+	sys.exit()
+	
+except Exception as e:
+	print('Your PB_theme_functions.py throwed an Exception, kindly debug your code!\n')
+	traceback.print_exc(file=sys.stdout)
+	sys.exit()
 
-##############################################################
-# initializing the pin numbers where motors are connected
-L_PWM_PIN1 = 13
-L_PWM_PIN2 = 19
-R_PWM_PIN2 = 32
-R_PWM_PIN1 = 33
-ENA = 31
-ENA1 =37
-# declare motor pins as output pins
-# motors get input from the PWM pins
-def motor_pin_setup():
-    global L_MOTOR1, L_MOTOR2, R_MOTOR1, R_MOTOR2
-    
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(R_PWM_PIN1, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(R_PWM_PIN2, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(L_PWM_PIN1, GPIO.OUT, initial=GPIO.HIGH)
-    GPIO.setup(L_PWM_PIN2, GPIO.OUT, initial=GPIO.HIGH)
-    # setting initial PWM frequency for all 4 pins
-    L_MOTOR1 = GPIO.PWM(L_PWM_PIN1, 100) 
-    R_MOTOR1 = GPIO.PWM(R_PWM_PIN1, 100)
-    L_MOTOR2 = GPIO.PWM(L_PWM_PIN2, 100)
-    R_MOTOR2 = GPIO.PWM(R_PWM_PIN2, 100) 
-    
-    # setting initial speed (duty cycle) for each pin as 0
-    L_MOTOR1.start(0)
-    R_MOTOR1.start(0)
-    L_MOTOR2.start(0)
-    R_MOTOR2.start(0)
-    
-
-def left():
-    L_MOTOR1.ChangeDutyCycle(100)
-    R_MOTOR2.ChangeDutyCycle(100)
-
-
-def right():
-    L_MOTOR2.ChangeDutyCycle(100)
-    R_MOTOR1.ChangeDutyCycle(100)
-
-def straight():
-    L_MOTOR1.ChangeDutyCycle(100)
-    R_MOTOR1.ChangeDutyCycle(100)
-
-def wait():
-    L_MOTOR1.ChangeDutyCycle(0)
-    R_MOTOR1.ChangeDutyCycle(0)
-    motor_pause(50)
-
-
-
-def setup_client(host, port):
-
+def task_4b_implementation(sim):
 	"""
 	Purpose:
 	---
-	This function creates a new socket client and then tries
-	to connect to a socket server.
+	This function contains the implementation logic for task 4B 
 
 	Input Arguments:
 	---
-	`host` :	[ string ]
-			host name or ip address for the server
+    `sim` : [ object ]
+            ZeroMQ RemoteAPI object
 
-	`port` : [ string ]
-			integer value specifying port name
-	Returns:
-
-	`client` : [ socket object ]
-			   a new client socket object
-	---
-
-	
-	Example call:
-	---
-	client = setup_client(host, port)
-	""" 
-
-	client = None
-
-	##################	ADD YOUR CODE HERE	##################
-	#client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-	print(client)
-	print(host, port)
-	client.connect((host, port))
-
-	
-
-	##########################################################
-
-	return client
-
-def receive_message_via_socket(client):
-	"""
-	Purpose:
-	---
-	This function listens for a message from the specified
-	socket connection and returns the message when received.
-
-	Input Arguments:
-	---
-	`client` :	[ socket object ]
-			client socket object created by setup_client() function
-	Returns:
-	---
-	`message` : [ string ]
-			message received through socket communication
-	
-	Example call:
-	---
-	message = receive_message_via_socket(connection)
-	"""
-
-	message = None
-
-	##################	ADD YOUR CODE HERE	##################
-	message=client.recv(256).decode('utf-8')
-
-
-
-	##########################################################
-
-	return message
-
-def send_message_via_socket(client, message):
-	"""
-	Purpose:
-	---
-	This function sends a message over the specified socket connection
-
-	Input Arguments:
-	---
-	`client` :	[ socket object ]
-			client socket object created by setup_client() function
-
-	`message` : [ string ]
-			message sent through socket communication
-
-	Returns:
-	---
-	None
-	
-	Example call:
-	---
-	send_message_via_socket(connection, message)
-	"""
-
-	##################	ADD YOUR CODE HERE	##################
-	msg=message.encode('utf-8')
-	client.send(msg)
-
-
-	##########################################################
-
-def rgb_led_setup():
-	"""
-	Purpose:
-	---
-	This function configures pins connected to rgb led as output and
-	enables PWM on the pins 
-
-	Input Arguments:
-	---
-	You are free to define input arguments for this function.
+	You are free to define additional input arguments for this function.
 
 	Returns:
 	---
@@ -210,187 +73,186 @@ def rgb_led_setup():
 	
 	Example call:
 	---
-	rgb_led_setup()
+	task_4b_implementation(sim)
 	"""
 
 	##################	ADD YOUR CODE HERE	##################
-	redPin = 24
-	greenPin = 5
-	bluePin = 18
+	maze_image= cv2.imread("config_image.png")
 
-	# ENA =31
-	# ENA =37
-	global r,g,b
-#	GPIO.setmode(GPIO.BOARD)
-	GPIO.setup(redPin,GPIO.OUT,initial=GPIO.LOW)
-	GPIO.setup(greenPin,GPIO.OUT,initial=GPIO.LOW)
-	GPIO.setup(bluePin,GPIO.OUT,initial=GPIO.LOW)
+	traffic_signals, start_node, end_node =pb_theme.detect_all_nodes(maze_image)
+	print(traffic_signals, start_node, end_node)
+	path = pb_theme.detect_paths_to_graph(maze_image)
 
-	# GPIO.setup(R_PWM_PIN, GPIO.OUT, initial=GPIO.HIGH)
-	r=GPIO.PWM(redPin, 100)
-	g=GPIO.PWM(greenPin, 100)
-	b=GPIO.PWM(bluePin, 100)
+	paths=pb_theme.path_planning(path, start_node, 'F2')
+	print(paths)
+	moves = pb_theme.paths_to_moves(paths, traffic_signals)
+	print(moves)
+	l=len(moves)
+	i=0
+	while l:
+		k=moves[i]
+		cv2.waitKey(4)
+		pb_theme.send_message_via_socket(connection_2,k)
+		cv2.waitKey(4)
 
-#	# e=GPIO.PWM(R_PWM_PIN, 100)
+		i=i+1
+		l=l-1
 
-	r.start(0)
-	b.start(0)
-	g.start(0)
-    #return r,g,b
-#    print("hello")
-	
+
+
 	##########################################################
-	
-def rgb_led_set_color(color):
-	"""
-	
-	---
-	This function takes the color as input and changes the color of rgb led
-	connected to Raspberry Pi 
 
-	Input Arguments:
-	---
-
-	`color` : [ string ]
-			color detected in QR code communicated by server
-	
-	You are free to define any additional input arguments for this function.
-
-	Returns:
-	---
-	You are free to define output parameters for this function.
-	
-	Example call:
-	---
-	rgb_led_set_color(color)
-	"""    
-
-	##################	ADD YOUR CODE HERE	##################
-	time.sleep(1)
-# 	print("------------------------------------------------")
-	if color == 'Red':
-		r.ChangeDutyCycle(100)
-		g.ChangeDutyCycle(0)
-		b.ChangeDutyCycle(0)
-# 
-# 		GPIO.output(redPin,GPIO.LOW)
-# 		GPIO.output(greenPin,GPIO.HIGH)
-# 		GPIO.output(bluePin,GPIO.HIGH)
-	if color == 'Green':
-
-		r.ChangeDutyCycle(0)
-		g.ChangeDutyCycle(100)
-		b.ChangeDutyCycle(0)
-
-# 		
-# 		GPIO.output(redPin,GPIO.LOW)
-# 		GPIO.output(greenPin,GPIO.HIGH)
-# 		GPIO.output(bluePin,GPIO.LOW)
-
-	if color == 'Blue':
-# 		print("blue")
-		r.ChangeDutyCycle(0)
-		g.ChangeDutyCycle(0)
-		b.ChangeDutyCycle(100)
-# 
-# 		GPIO.output(redPin,GPIO.LOW)
-# 		GPIO.output(greenPin,GPIO.LOW)
-# 		GPIO.output(bluePin,GPIO.HIGH)
-
-
-	if color == 'Orange':
-# 		print("orange")
-		r.ChangeDutyCycle(100)
-		g.ChangeDutyCycle(13.7)
-		b.ChangeDutyCycle(0)
-
-# 		GPIO.output(redPin,GPIO.HIGH)
-# 		GPIO.output(greenPin,GPIO.LOW)
-# 		GPIO.output(bluePin,GPIO.HIGH)
-
-  
-	if color == 'Sky Blue':
-# 		print("skyblue")
-		r.ChangeDutyCycle(0)
-		g.ChangeDutyCycle(100)
-		b.ChangeDutyCycle(100)
-# 
-# 		GPIO.output(redPin,GPIO.HIGH)
-# 		GPIO.output(greenPin,GPIO.HIGH)
-# 		GPIO.output(bluePin,GPIO.HIGH)
-
-	if color == 'Pink':
-# 		print("pink")
-		r.ChangeDutyCycle(100)
-		g.ChangeDutyCycle(0)
-		b.ChangeDutyCycle(47.84)
-
-# 		GPIO.output(redPin,GPIO.HIGH)
-# 		GPIO.output(greenPin,GPIO.HIGH)
-# 		GPIO.output(bluePin,GPIO.LOW)
-
-
-
-
-
-	
-	##########################################################
 
 if __name__ == "__main__":
-
-		host = "10.25.2.249"
-		port = 5050
-# 
-# 		## 
-# 		redPin = 24
-# 		gndPin = 23
-# 		greenPin = 5
-# 		bluePin = 18
-# 
-# 		## PWM values to be set for rgb led to display different colors
-# 		pwm_values = {"Red": (255, 0, 0), "Blue": (0, 0, 255), "Green": (0, 255, 0), "Orange": (255, 35, 0), "Pink": (255, 0, 122), "Sky Blue": (0, 100, 100)}
-# 
-# 
-# 		## Configure rgb led pins
-# 		rgb_led_setup()
-# 
-# 
-		## Set up new socket client and connect to a socket server
-		try:
-			client = setup_client(host, port)
+	
+	host = ''
+	port = 5050
 
 
-		except socket.error as error:
-			print("Error in setting up server")
-			print(error)
-			sys.exit()
+	## Set up new socket server
+	try:
+		server = pb_theme.setup_server(host, port)
+		print("Socket Server successfully created")
 
-		## Wait for START command from socket_server_rgb.pys
-		message = receive_message_via_socket(client)
-		if message == "START":
-			print("\nTask 3D Part 3 execution started !!")
-        motor_pin_setup()
+		# print(type(server))
 
-		while True:
-			## Receive message from socket_server_rgb.py
-			message = receive_message_via_socket(client)
+	except socket.error as error:
+		print("Error in setting up server")
+		print(error)
+		sys.exit()
 
-			## If received message is STOP, break out of loop
-			if message == "STOP":
-				print("\nTask 3D Part 3 execution stopped !!")
-				break
-			else:
-				print("Color received: " + message)
-			if message == "LEFT"
-                left()
-			if message == "RIGHT"
-                right()
-			if message == "STRAIGHT"
-                straight()
-			if message == "WAIT_5"
-                wait()
-            
-# 				rgb_led_set_color(message)
+
+	## Set up new connection with a socket client (PB_task3d_socket.exe)
+	try:
+		print("\nPlease run PB_socket.exe program to connect to PB_socket client")
+		connection_1, address_1 = pb_theme.setup_connection(server)
+		print("Connected to: " + address_1[0] + ":" + str(address_1[1]))
+
+	except KeyboardInterrupt:
+		sys.exit()
+
+	# ## Set up new connection with Raspberry Pi
+	try:
+		print("\nPlease connect to Raspberry pi client")
+		connection_2, address_2 = pb_theme.setup_connection(server)
+		print("Connected to: " + address_2[0] + ":" + str(address_2[1]))
+
+	except KeyboardInterrupt:
+		sys.exit()
+
+	## Send setup message to PB_socket
+	pb_theme.send_message_via_socket(connection_1, "SETUP")
+
+	message = pb_theme.receive_message_via_socket(connection_1)
+	## Loop infinitely until SETUP_DONE message is received
+	while True:
+		if message == "SETUP_DONE":
+			break
+		else:
+			print("Cannot proceed further until SETUP command is received")
+			message = pb_theme.receive_message_via_socket(connection_1)
+
+	try:
+		# obtain required arena parameters
+		config_img = cv2.imread("config_image.png")
+		detected_arena_parameters = pb_theme.detect_arena_parameters(config_img)			
+		medicine_package_details = detected_arena_parameters["medicine_packages"]
+		traffic_signals = detected_arena_parameters['traffic_signals']
+		start_node = detected_arena_parameters['start_node']
+		end_node = detected_arena_parameters['end_node']
+		horizontal_roads_under_construction = detected_arena_parameters['horizontal_roads_under_construction']
+		vertical_roads_under_construction = detected_arena_parameters['vertical_roads_under_construction']
+
+		# print("Medicine Packages: ", medicine_package_details)
+		# print("Traffic Signals: ", traffic_signals)
+		# print("Start Node: ", start_node)
+		# print("End Node: ", end_node)
+		# print("Horizontal Roads under Construction: ", horizontal_roads_under_construction)
+		# print("Vertical Roads under Construction: ", vertical_roads_under_construction)
+		# print("\n\n")
+
+	except Exception as e:
+		print('Your task_1a.py throwed an Exception, kindly debug your code!\n')
+		traceback.print_exc(file=sys.stdout)
+		sys.exit()
+
+	try:
+
+		## Connect to CoppeliaSim arena
+		coppelia_client = RemoteAPIClient()
+		sim = coppelia_client.getObject('sim')
+
+		## Define all models
+		all_models = []
+
+		## Setting up coppeliasim scene
+		print("[1] Setting up the scene in CoppeliaSim")
+		all_models = pb_theme.place_packages(medicine_package_details, sim, all_models)
+		all_models = pb_theme.place_traffic_signals(traffic_signals, sim, all_models)
+		all_models = pb_theme.place_horizontal_barricade(horizontal_roads_under_construction, sim, all_models)
+		all_models = pb_theme.place_vertical_barricade(vertical_roads_under_construction, sim, all_models)
+		all_models = pb_theme.place_start_end_nodes(start_node, end_node, sim, all_models)
+		print("[2] Completed setting up the scene in CoppeliaSim")
+		print("[3] Checking arena configuration in CoppeliaSim")
+
+	except Exception as e:
+		print('Your task_4a.py throwed an Exception, kindly debug your code!\n')
+		traceback.print_exc(file=sys.stdout)
+		sys.exit()
+
+	pb_theme.send_message_via_socket(connection_1, "CHECK_ARENA")
+
+	## Check if arena setup is ok or not
+	message = pb_theme.receive_message_via_socket(connection_1)
+	while True:
 		
 
+		if message == "ARENA_SETUP_OK":
+			print("[4] Arena was properly setup in CoppeliaSim")
+			break
+		elif message == "ARENA_SETUP_NOT_OK":
+			print("[4] Arena was not properly setup in CoppeliaSim")
+			connection_1.close()
+			# connection_2.close()
+			server.close()
+			sys.exit()
+		else:
+			pass
 
+	## Send Start Simulation Command to PB_Socket
+	pb_theme.send_message_via_socket(connection_1, "SIMULATION_START")
+	
+	## Check if simulation started correctly
+	message = pb_theme.receive_message_via_socket(connection_1)
+	while True:
+		# message = pb_theme.receive_message_via_socket(connection_1)
+
+		if message == "SIMULATION_STARTED_CORRECTLY":
+			print("[5] Simulation was started in CoppeliaSim")
+			break
+
+		if message == "SIMULATION_NOT_STARTED_CORRECTLY":
+			print("[5] Simulation was not started in CoppeliaSim")
+			sys.exit()
+
+	## Send Start Command to Raspberry Pi to start execution
+	pb_theme.send_message_via_socket(connection_2, "START")
+
+	
+	task_4b_implementation(sim)
+
+	## Send Stop Simulation Command to PB_Socket
+	pb_theme.send_message_via_socket(connection_1, "SIMULATION_STOP")
+
+	## Check if simulation started correctly
+	message = pb_theme.receive_message_via_socket(connection_1)
+	while True:
+		# message = pb_theme.receive_message_via_socket(connection_1)
+
+		if message == "SIMULATION_STOPPED_CORRECTLY":
+			print("[6] Simulation was stopped in CoppeliaSim")
+			break
+
+		if message == "SIMULATION_NOT_STOPPED_CORRECTLY":
+			print("[6] Simulation was not stopped in CoppeliaSim")
+			sys.exit()
