@@ -1,104 +1,153 @@
-'''
-*****************************************************************************************
-*
-*        		===============================================
-*           		Pharma Bot (PB) Theme (eYRC 2022-23)
-*        		===============================================
-*
-*  This script is to implement Task 3A of Pharma Bot (PB) Theme (eYRC 2022-23).
-*  
-*  This software is made available on an "AS IS WHERE IS BASIS".
-*  Licensee/end user indemnifies and will keep e-Yantra indemnified from
-*  any and all claim(s) that emanate from the use of the Software or 
-*  breach of the terms of this agreement.
-*
-*****************************************************************************************
-'''
-
-# Team ID:			[ Team-ID ]
-# Author List:		[ Names of team members worked on this file separated by Comma: Name1, Name2, ... ]
-# Filename:			task_3a.py
-# Functions:		detect_all_nodes, detect_horizontal_roads_under_construction, detect_vertical_roads_under_construction,
-#					detect_paths_to_graph, detect_arena_parameters, path_planning_dj_algo
-# 					[ Comma separated list of functions in this file ]
-
-####################### IMPORT MODULES #######################
-## You are not allowed to make any changes in this section. ##
-## You have to implement this task with the three available ##
-## modules for this task (numpy, opencv)                    ##
-##############################################################
-import numpy as np
+# import the necessary packages
+import picamera
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import time
 import cv2
+import picamera
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+import numpy as np
+import os
+import sys
+import RPi.GPIO as GPIO
+
+GPIO.setwarnings(False)
 ##############################################################
 
 ################# ADD UTILITY FUNCTIONS HERE #################
 
 
-
-
-
 ##############################################################
+# initializing the pin numbers where motors are connected
+L_PWM_PIN1 = 38
+L_PWM_PIN2 = 40
+R_PWM_PIN2 = 32
+R_PWM_PIN1 = 33
+ENA = 31
+ENA1 =37
 
-def detect_all_nodes(image):
-	"""
-	Purpose:
-	---
-	This function takes the image as an argument and returns a list of
-	nodes in which traffic signals, start_node and end_node are present in the image
+# declare motor pins as output pins
+# motors get input from the PWM pins
+def motor_pin_setup():
+    global L_MOTOR1, L_MOTOR2, R_MOTOR1, R_MOTOR2,E1,E2
+    
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(R_PWM_PIN1, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(R_PWM_PIN2, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(L_PWM_PIN1, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(L_PWM_PIN2, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(ENA, GPIO.OUT, initial=GPIO.HIGH)
+    GPIO.setup(ENA1, GPIO.OUT, initial=GPIO.HIGH)
 
-	Input Arguments:
-	---
-	`maze_image` :	[ numpy array ]
-			numpy array of image returned by cv2 library
-	Returns:
-	---
-	`traffic_signals, start_node, end_node` : [ list ], str, str
-			list containing nodes in which traffic signals are present, start and end node too
-	
-	Example call:
-	---
-	traffic_signals, start_node, end_node = detect_all_nodes(maze_image)
-	"""    
-	traffic_signals = []
-	start_node = ""
-	end_node = ""
+    # setting initial PWM frequency for all 4 pins
+    L_MOTOR1 = GPIO.PWM(L_PWM_PIN1, 100) 
+    R_MOTOR1 = GPIO.PWM(R_PWM_PIN1, 100)
+    L_MOTOR2 = GPIO.PWM(L_PWM_PIN2, 100)
+    R_MOTOR2 = GPIO.PWM(R_PWM_PIN2, 100)
+    E1 = GPIO.PWM(ENA, 100) 
+    E2 = GPIO.PWM(ENA1, 100) 
 
-	##############	ADD YOUR CODE HERE	##############
-	frame = image
-	hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-	li = []
-	for i in range(0,3):
-		if i == 0:
-			# print("maitrey")
-			mask=cv2.inRange(hsv,(0,100,20),(10,255,255))
-		if i == 1:
-			# print("patel")
-			mask=cv2.inRange(hsv,(36,50,70),(89,255,255))
-		if i == 2:
-			# print("impossible")
-			mask=cv2.inRange(hsv,(129,50,70),(158,255,255))
+    # setting initial speed (duty cycle) for each pin as 0
+    L_MOTOR1.start(0)
+    R_MOTOR1.start(0)
+    L_MOTOR2.start(0)
+    R_MOTOR2.start(0)
 
-		# mask=cv2.inRange(hsv,l_b,u_b)
-		# mask=cv2.inRange(hsv,(0,100,20),(10,255,255))
-		res= cv2.bitwise_and(frame ,frame ,mask=mask)
-		# cv2.imshow("frames", frame)
-		# cv2.imshow("hsv", hsv)
-		# cv2.imshow("musk", mask)
-		# cv2.imshow("res", res)
-		imgGrey = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
-		_, thrash = cv2.threshold(imgGrey, 50, 255, cv2.THRESH_BINARY)
-		# cv2.imshow('thresh image ',thrash)
 
-		contours, _ = cv2.findContours(thrash, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-		cv2.waitKey(1)
-		# cv2.imshow(" new", frame)
-		for contour in contours:
-			approx = cv2.approxPolyDP(contour, 0.01* cv2.arcLength(contour, True), True)
-			# cv2.drawContours(frame, [approx], 0, (0, 255, 155), 2)
-			# cv2.imshow('contour',frame)
-			M = cv2.moments(contour)
-			if len(approx) == 4 and len(contour) < 50:		
-				# print(len(contour))
+# initialize the camera and grab a reference to the raw camera capture
+camera = PiCamera()
+camera.resolution = (640, 480)
+camera.framerate = 32
+rawCapture = PiRGBArray(camera, size=(640, 480))
+stream = camera.capture_continuous(rawCapture,format="bgr", use_video_port=True)
+motor_pin_setup()
+L_MOTOR2.ChangeDutyCycle(40)
+R_MOTOR2.ChangeDutyCycle(40)
+
+
+print("M")
+# capture frames from the camera
+for frame in stream:
+    # grab the raw NumPy array representing the image, then initialize the timestamp
+    # and occupied/unoccupied text
+    image = frame.array
+    img=image[0:800,101:550]
+    # show the frame
+    cv2.imshow("Frame", image)
+    cv2.imshow("Frame3", img)
+
+    key = cv2.waitKey(1) & 0xFF
+    
+    # clear the stream in preparation for the next frame
+    hsv=cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    low_b = np.array([0,0,168])
+    high_b = np.array([172,111,255])
+    yellow_lower = np.array([20, 100, 100])
+    yellow_upper = np.array([30, 255, 255])
+    mask = cv2.inRange(hsv, low_b, high_b)
+    mask1 = cv2.inRange(hsv,yellow_lower,yellow_upper)
+    out = cv2.bitwise_and(image,image, mask= mask)
+    out1 = cv2.bitwise_and(image,image, mask= mask1)
+    contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
+    print("patelllll")
+    #rawCapture.truncate(0)
+
+    #left(stream,rawCapture)
+    U=0
+    contours1, hierarchy1 = cv2.findContours(mask1, 1, cv2.CHAIN_APPROX_NONE)
+    for contour in contours:
+        if len(contour) >200 and len(contour) < 400:
+            approx = cv2.approxPolyDP(contour, 0.01* cv2.arcLength(contour, True), True)
+            x,y,w,h=cv2.boundingRect(contour)
+            cv2.drawContours(image, [approx], 0, (0, 255, 255), 5)
+            print("maittttttt")
+            print("---",x,y,w,h)
+            print(x,y,w,h,len(contour))
+            # if w < 60 and w > 20 and len(contour) < 375 and len(contour) > 200:
+            #u=u+1
+            #cv2.drawContours(img, [approx], 0, (0, 0, 255), 5)
+            ll=len(contour)
+            #print("----------",ll,w)
+            M = cv2.moments(contour)
+            if M["m00"] !=0 :
+                cx = int(M['m10']/M['m00'])
+                cy = int(M['m01']/M['m00'])
+                print("CX : "+str(cx)+"  CY : "+str(cy))
+            if cx < 329 :
+                print("move right")
+                R_MOTOR2.ChangeDutyCycle(42)
+                L_MOTOR2.ChangeDutyCycle(38)
+
+            elif cx > 338 :
+                print("move left")
+                L_MOTOR2.ChangeDutyCycle(42)
+                R_MOTOR2.ChangeDutyCycle(38)
+            
+            else:
+                print("move straight")
+                L_MOTOR2.ChangeDutyCycle(40)
+                R_MOTOR2.ChangeDutyCycle(40)
+
+
+
+
+    rawCapture.truncate(0)
+    cv2.imshow('maitrey',image)
+    cv2.imshow('mask',mask)
+    cv2.imshow('mask1',mask1)
+    cv2.imshow('out',out)
+    cv2.waitKey(1)
+    rawCapture.truncate(0)
+
+   
+    
+    # if the `q` key was pressed, break from the loop and close display window
+    if key == ord("q"):
+        cv2.destroyAllWindows()
+        GPIO.cleanup()
+        break
+
 				if M['m00'] != 0:
 					cx = int(M['m10']/M['m00'])
 					cy = int(M['m01']/M['m00'])
