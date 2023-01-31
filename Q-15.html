@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        function fun()
+        {
+            let arr = [5,10,6,0,2]
+            let i=0
+            let k = 0
+            let s=0
+            let e=-1
+            let v=1
+            let j=0
+            let temp=0
+            while (arr[i]>=0)
+            {
+                //document.write("// e= "+e+" value = "+arr[i])
+                e=e+1
+                i=i+1
+            }
+            for(i=0;i<e;i++)
+            {
+                for(j=i+1;j<=e;j++)
+                {
+                    if (arr[i]>arr[j])
+                    {
+                        temp=arr[i]
+                        arr[i]=arr[j]
+                        arr[j]=temp
+                    }
+                }
+            }
+            if (k==arr[s])
+            {
+                alert(" number found "+ k + " at position " +s )
+            }
+            else if(k==arr[e])
+            {
+                alert(" number found "+ k + " at position " +e )
+            }
+            else
+            {
+                while(v>0)
+                {
+                    v = (s+e)/2
+                    //document.write("\\v = "+v)
+                    if (k==arr[v])
+                    {
+                        alert(" number found "+ k + " at position " +v )
+                        v=0
+                    }
+                    else
+                    {
+                        if(k>arr[v])
+                        {
+                            s=v
+                        }
+                        else
+                        {
+                            e=v
+                        }
+                    }
+                }
+
+            }
+        }
+    </script>
+</head>
+<body>
+    <p>LARGEST NUMBER IN ARRAY</p>
+    <P>THE DUMMY ARRAY IS [5,10,6,0,2]</P>
+    <button type="button" onclick="fun()">click it</button>
+</body>
+</html>

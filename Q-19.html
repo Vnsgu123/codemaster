@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        function fun()
+        {
+            let s = "http://www.google.com/page1.html"
+            let i=0
+            let arr = s.split(":")[0]
+            let arr1 = s.split(":")[1].split("//")[1].split("/")[0]
+            let arr2 = s.split(":")[1].split("//")[1].split("/")[1].split(".")[0]
+            let arr3 = s.split(":")[1].split("//")[1].split("/")[1].split(".")[1]
+
+            //document.write(arr," ",arr1," ",arr2)
+            let A=[]
+            A[0]=arr
+            A[1]=arr1
+            A[2]=arr2
+            A[3]=arr3
+
+            document.getElementById("sp1").innerHTML="Protocol :" + arr + "<br>" + "Domain :" +arr1 + "<br>" + "Page :" + arr2 +"<br>"+ "Extension :" + arr3
+
+        } 
+    </script>
+</head>
+<body>
+    <p>LARGEST NUMBER IN ARRAY</p>
+    <P>THE INPUT URL IS http://www.google.com/page1.html </P>
+    <button type="button" onclick="fun()">click it</button><br><br>
+    <span id="sp1"></span>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script>
+        function fun()
+        {
+            let arr = [5,10,6,0,2]
+            let i=0
+            let max = arr[0]
+            for(i=0;i<5;i++)
+            {
+                if (arr[i] > max)
+                {
+                    max=arr[i]
+                }
+            }
+
+            alert("largest number is " + max)
+        }
+    </script>
+</head>
+<body>
+    <p>LARGEST NUMBER IN ARRAY</p>
+    <P>THE DUMMY ARRAY IS [5,10,6,0,2]</P>
+    <button type="button" onclick="fun()">click it</button>
+</body>
+</html>
