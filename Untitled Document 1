@@ -1,0 +1,221 @@
+-------create package bookinfo 
+as
+procedure listbooks(name varchar(20));
+procedure purchaseduration(d1 date,d2 date);
+procedure totalbookpurchase(d1 date,d2 date);
+procedure countauthorbooks(author varchar(20),subject varchar(20));
+end bookinfo;
+
+
+
+create table AuthorMaster(
+AuthorID int,
+AuthorName varchar(20))
+
+
+create table BookSubjectMaster(
+BookSubID int,
+BookSubjectName varchar(20))
+
+
+create table BookMaster(
+BookCode int,
+BookName varchar(30),
+BookPrice int,
+BookQTY int,
+DiscountAmount int,
+NetPrice int,
+BookSubID int,
+AuthorID int ,
+BookPurchaseDate date)
+---------------------------------------
+
+-----------------------------------
+
+create package bookinfo 
+as
+procedure listbooks(name varchar(20));
+procedure purchaseduration(d1 date,d2 date);
+procedure totalbookpurchase(d1 date,d2 date);
+procedure countauthorbooks(author varchar(20),subject varchar(20));
+end bookinfo;
+
+
+
+create table AuthorMaster(
+AuthorID int,
+AuthorName varchar(20))
+
+
+create table BookSubjectMaster(
+BookSubID int,
+BookSubjectName varchar(20))
+
+
+create table BookMaster(
+BookCode int,
+BookName varchar(30),
+BookPrice int,
+BookQTY int,
+DiscountAmount int,
+NetPrice int,
+BookSubID int,
+AuthorID int ,
+BookPurchaseDate date)
+
+
+
+create OR REPLACE package body bookinfo as
+
+procedure listbooks(name varchar(20)) is 
+o1 varchar(50);
+cursor curr select BookName from BookMaster where BookSubID in (select BookSubID from BookSubjectMaster where BookSubjectName = name);
+begin
+open curr
+loop
+fetch curr into o1;
+exit when curr%NOTFOUND;
+END LOOP;
+DBMS_OUTPUT.PUT_LINE("NAME OF BOOKS "||o1);
+END listbooks;
+
+procedure purchaseduration(d1 date,d2 date) is
+cursor curr select BookName BookSubjectName from BookMaster,BookSubjectMaster where BookMaster.BookSubID = BookSubjectMaster.BookSubID and BookPurchaseDate between d1 and d2 ;
+o1 varchar(20);
+begin
+open curr
+loop
+fetch curr into o1;
+exit when curr%notfound;
+end loop;
+DBMS_OUTPUT.PUT_LINE(" book name "||o1.BookName||" BookSubjectName "||o1.BookSubjectName);
+end purchaseduration;
+
+procedure totalbookpurchase(d1 date,d2 date) is
+o1 number;
+begin
+select sum(BookQTY) into o1 from BookMaster where BookPurchaseDate between d1 and d2;
+DBMS_OUTPUT.PUT_LINE("total quantity "||o1);
+end totalbookpurchase;
+
+procedure
+
+
+
+END bookinfo;
+
+
+
+
+
+
+
+
+
+-----------------------llllllllllllllll
+
+create package bookinfo 
+as
+procedure listbooks(name varchar(20));
+procedure purchaseduration(d1 date,d2 date);
+procedure totalbookpurchase(d1 date,d2 date);
+procedure countauthorbooks(author varchar(20),subject varchar(20));
+end bookinfo;
+
+
+
+create table AuthorMaster(
+AuthorID int,
+AuthorName varchar(20))
+
+
+create table BookSubjectMaster(
+BookSubID int,
+BookSubjectName varchar(20))
+
+
+create table BookMaster(
+BookCode int,
+BookName varchar(30),
+BookPrice int,
+BookQTY int,
+DiscountAmount int,
+NetPrice int,
+BookSubID int,
+AuthorID int ,
+BookPurchaseDate date)
+
+
+
+create OR REPLACE package body bookinfo as
+
+procedure listbooks(name varchar(20)) is 
+o1 varchar(50);
+cursor curr select BookName from BookMaster where BookSubID in (select BookSubID from BookSubjectMaster where BookSubjectName = name);
+begin
+open curr
+loop
+fetch curr into o1;
+exit when curr%NOTFOUND;
+END LOOP;
+DBMS_OUTPUT.PUT_LINE("NAME OF BOOKS "||o1);
+END listbooks;
+
+procedure purchaseduration(d1 date,d2 date) is
+cursor curr select BookName BookSubjectName from BookMaster,BookSubjectMaster where BookMaster.BookSubID = BookSubjectMaster.BookSubID and BookPurchaseDate between d1 and d2 ;
+o1 varchar(20);
+begin
+open curr
+loop
+fetch curr into o1;
+exit when curr%notfound;
+end loop;
+
+DBMS_OUTPUT.PUT_LINE(" book name "||o1.BookName||" BookSubjectName "||o1.BookSubjectName);
+end purchaseduration;
+
+procedure totalbookpurchase(d1 date,d2 date) is
+o1 number;
+begin
+select sum(BookQTY) into o1 from BookMaster where BookPurchaseDate between d1 and d2;
+
+DBMS_OUTPUT.PUT_LINE("total quantity "||o1);
+end totalbookpurchase;
+
+procedure countauthorbooks(author varchar(20),subject varchar(20)) is
+o1 number;
+begin
+select count(BookName) into o1 from BookMaster where BookSubID in (select BookSubID from BookSubjectMaster where BookSubjectName = subject ) and AuthorID(select AuthorID from AuthorMaster where AuthorName = author);
+
+
+DBMS_OUTPUT.PUT_LINE("book of particular author  "||o1);
+end countauthorbooks;
+
+
+END bookinfo;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
